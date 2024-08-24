@@ -1,42 +1,22 @@
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
+const { MYSQL_HOST, MYSQL_PORT, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DB_NAME } = process.env;
 
-const {
-  MONGO_USERNAME,
-  MONGO_PASSWORD,
-  MONGO_DB_NAME,
-  MONGO_HOST,
-  MONGO_PORT,
-} = process.env;
+const sequelize = new Sequelize(MYSQL_DB_NAME, MYSQL_USERNAME, MYSQL_PASSWORD, {
+  host: MYSQL_HOST,
+  port: MYSQL_PORT,
+  dialect: 'mysql',
+});
 
-const dbUri = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB_NAME}?authSource=admin`;
-
-const mongooseOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-};
-
-async function connectToMongoDB() {
+async function connectToMySQL() {
   try {
-    await mongoose.connect(dbUri, mongooseOptions);
-    console.log('Connected to MongoDB');
+    await sequelize.authenticate();
+    console.log('Connected to MySQL');
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    console.error('MySQL connection error:', err);
     process.exit(1);
   }
 }
 
-connectToMongoDB();
+connectToMySQL();
 
-const db = mongoose.connection;
-
-db.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-db.on('disconnected', () => {
-  console.log('MongoDB connection disconnected');
-});
-
-module.exports = db;
+module.exports = sequelize;

@@ -1,51 +1,69 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../app');
 const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
   name: {
-    type: String,
-    required: [true, 'Name is required'],
-    trim: true,
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'Name is required',
+      },
+    },
   },
   email: {
-    type: String,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    lowercase: true,
-    trim: true,
-    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address'],
+    validate: {
+      isEmail: {
+        msg: 'Invalid email address',
+      },
+    },
   },
   phoneNumber: {
-    type: String,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    match: [/^\d{3}-\d{3}-\d{4}$/, 'Invalid phone number'],
+    validate: {
+      is: {
+        args: /^\d{3}-\d{3}-\d{4}$/, // Corrected regular expression
+        msg: 'Invalid phone number',
+      },
+    },
   },
   password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters'],
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: {
+        args: [8],
+        msg: 'Password must be at least 8 characters',
+      },
+    },
   },
   role: {
-    type: String,
-    enum: {
-      values: ['admin', 'vendor', 'customer'],
-      message: 'Role must be either admin, vendor, or customer',
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [['admin', 'vendor', 'customer']],
+        msg: 'Role must be either admin, vendor, or customer',
+      },
     },
-    default: 'customer',
+    defaultValue: 'customer',
   },
 });
 
-userSchema.pre('save', async function (next) {
+User.beforeCreate(async (user, options) => {
   // Hash password before saving
-  if (!this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+    user.password = await bcrypt.hash(user.password, salt);
   } catch (err) {
-    next(err);
+    throw err;
   }
 });
-
-const User = mongoose.model('User', userSchema);
 
 module.exports = User;
