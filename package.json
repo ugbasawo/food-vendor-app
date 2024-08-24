@@ -1,0 +1,21 @@
+{
+  "name": "food-vendor-app",
+  "version": "1.0.0",
+  "description": "A food vendor application for managing orders and customers",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.11.15",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "author": "David Okpe",
+  "license": "MIT"
+}
